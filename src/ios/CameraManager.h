@@ -13,29 +13,29 @@
 {
     AVCaptureSession *_captureSession;
     AVCaptureDevice *_device;
-    
+
     clock_t _lastCapture;
-    
+
     BOOL _isCapturing;
     NSTimer *_inactiveTimer;
-    
+
     NSLock *_jpegLock;
     NSData *_jpgData;
     BOOL _newJpgNeeded;
-    
-    int _selectedFormat; 
+
+    int _selectedFormat;
  }
 
 @property (nonatomic, retain) AVCaptureSession *captureSession;
 @property (nonatomic, retain) AVCaptureDevice *device;
 @property (nonatomic) int videoFormat;
 
-- (void) initCapture;
+- (void) initCapture:(NSString*)cameraType;
 - (void) deinitCapture;
 - (void) startScanning;
 - (void) stopScanning;
 - (void) toggleTorch;
- 
+
 - (BOOL) isRunning;
 
 - (NSData*) getJpegImage;

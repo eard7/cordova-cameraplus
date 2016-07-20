@@ -31,7 +31,7 @@ public class CameraPlus extends CordovaPlugin {
 
     /** Common tag used for logging statements. */
     private static final String LOGTAG = "CameraPlus";
-    
+
     /** Cordova Actions. */
 
     private static final String ACTION_START_CAMERA = "startCamera";
@@ -40,6 +40,7 @@ public class CameraPlus extends CordovaPlugin {
     private static final String ACTION_GET_JPEG_IMAGE = "getJpegImage";
     private static final String ACTION_GET_VIDEO_FORMATS = "getVideoFormats";
     private static final String ACTION_SET_VIDEO_FORMATS = "setVideoFormat";
+    public int CAMERA_TYPE = 0;
 
 
     @Override
@@ -64,15 +65,32 @@ public class CameraPlus extends CordovaPlugin {
             Log.d(LOGTAG, String.format("Invalid action passed: %s", action));
             result = new PluginResult(Status.INVALID_ACTION);
         }
-        
-        if(result != null) callbackContext.sendPluginResult( result );
-        
+
+        if(result != null) {
+            callbackContext.sendPluginResult( result );
+        } else {
+            callbackContext.success(action);
+        }
+
         return true;
     }
 
 
     private PluginResult startCamera(JSONArray inputs, CallbackContext callbackContext) {
+
+        String _cameraType;
         Log.w(LOGTAG, "startCamera");
+        CAMERA_TYPE = 0;
+
+        if (inputs.length() >= 1) {
+            try {
+                _cameraType = inputs.getString(0);
+                Log.w(LOGTAG, "_cameraType: "+_cameraType);
+                if(_cameraType.equals("front")) {
+                    CAMERA_TYPE = 1;
+                }
+            } catch (JSONException e) {}
+        }
 
          // initialize the camera manager :)
          CameraManager.init(cordova.getActivity().getApplicationContext());
@@ -92,24 +110,24 @@ public class CameraPlus extends CordovaPlugin {
 
     private PluginResult getJpegImage(JSONArray inputs, CallbackContext callbackContext) {
     	Log.w(LOGTAG, "getJpegImage");
-        
+
         byte[] bArray = CameraManager.lastFrame();
-        
+
         if (bArray != null)
         {
         	Log.w(LOGTAG, "Received " + String.valueOf(bArray.length) + " bytes...");
-        
+
         	String imageEncoded = Base64.encodeToString(bArray,Base64.NO_WRAP);
 
-        	//Log.e("LOOK", imageEncoded);       
+        	Log.e("LOOK", imageEncoded);
 
         	callbackContext.success( imageEncoded );
         }
         else
         {
-        	callbackContext.error(0);        	
+        	callbackContext.error(0);
         }
-        
+
         return null;
     }
 
@@ -130,34 +148,38 @@ public class CameraPlus extends CordovaPlugin {
     private boolean startCapture(){
         Log.w(LOGTAG, "startCapture");
 
+        /*
+
         if (false){
             CameraManager.setDesiredPreviewSize(1280, 720);
         } else {
             CameraManager.setDesiredPreviewSize(800, 480);
         }
+        */
+        CameraManager.setDesiredPreviewSize(800, 480);
 
         try {
-			CameraManager.get().openDriver();
+			CameraManager.get().openDriver(CAMERA_TYPE);
 		} catch (IOException e) {
 			Log.w(LOGTAG, "Exception in openDriver");
 		}
-        
-        //CameraManager.get().startPreview();        
+
+        //CameraManager.get().startPreview();
 
         return true;
     }
-    
+
     private boolean stopCapture(){
         Log.w(LOGTAG, "stopCapture");
-                
-        CameraManager.get().stopPreview();                
-        
+
+        CameraManager.get().stopPreview();
+
         try {
 			CameraManager.get().closeDriver();
 		} catch (Exception e) {
 			Log.w(LOGTAG, "Exception in closeDriver");
 		}
-        
+
         return true;
     }
 
